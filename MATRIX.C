@@ -36,7 +36,7 @@ void set_mode(byte mode)
     int86(VIDEO_INT, &regs, &regs);
 }
 
-
+/* set up a 16-shade greenscale palette */
 void green_palette() {
     unsigned char g, gstep;
     int i;
@@ -59,6 +59,7 @@ void green_palette() {
 	putGVal(g);
 	g += gstep;
     }
+    /* head of the trail is bright white rather than green */
     outp(0x03c9, 0x3F);
     outp(0x03c9, 0x3F);
     outp(0x03c9, 0x3F);
@@ -81,6 +82,7 @@ void step(int spawn) {
 	unsigned char currentColor;
 	unsigned char aboveColor;
 	unsigned char aboveChar;
+	/* Fade every cell's color by 1 */
 	for(row = 0; row < 25; row++) {
 	 for(col = 0; col < 80; col++) {
 		currentColor = 0x0F & colorat(col, row);
@@ -89,6 +91,7 @@ void step(int spawn) {
 		}
 	 }
 	}
+	/* continue the motion of any cell that was maximally bright last frame */
 	for(row = 1; row < 25; row++) {
 	 for(col = 0; col < 80; col++) {
 		currentColor = 0x0F & colorat(col, row);
@@ -100,6 +103,7 @@ void step(int spawn) {
 		}
 	 }
 	}
+	/* start new trails at some of the fully darkend top row cells */
 	row = 0;
 	for(col = 0; col < 80; col++) {
 		currentColor = colorat(col, row);
@@ -115,11 +119,14 @@ int main(int argc, char** argv) {
 	int i;
 	init_keyboard();
 	clear_keybuf(keybuf);
+	/* make sure we are in text mode */
+	set_mode(VGA_TEXT_MODE);
 	green_palette();
 	paint_box(0,0,80,25,0x0F);
 	paint_box(0,0,80,1, 0x00);
 	while(!test_keybuf(keybuf, KEY_ESC)) {
 		step(95);
+		/* as it turns out, 60Hz is ludicrously fast for this effect */
 		wait_retrace();
 		wait_retrace();
 		wait_retrace();
@@ -127,6 +134,8 @@ int main(int argc, char** argv) {
 		get_keys_hit(keybuf);
 	}
 	deinit_keyboard();
+	/* step through the simulation some more with new spawns disabled,
+		to allow remaining trails to finish their arc */
 	for(i = 0; i < 41; i ++) {
 		step(100);
 		wait_retrace();
@@ -135,6 +144,7 @@ int main(int argc, char** argv) {
 		wait_retrace();
 	}
 	clear_screen(0x07);
+	/* we're already in text_mode but this'll restore the palette */
 	set_mode(VGA_TEXT_MODE);
 	wait_retrace();
 	return 0;
