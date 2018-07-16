@@ -1,0 +1,2 @@
+matrix.exe: matrix.c txtui.c keyb.c
+	tcc -ml matrix.c txtui.c keyb.c
