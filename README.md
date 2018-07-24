@@ -12,4 +12,5 @@ features:
   -puts the default palette back when done
 
 Example output: (click to open in youtube)
+
 [![Example program output](https://img.youtube.com/vi/VBw3iJgbZq8/0.jpg)](https://youtu.be/VBw3iJgbZq8)
